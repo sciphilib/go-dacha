@@ -37,7 +37,7 @@ type UserInput struct {
 	Name        string            `json:"name" validate:"required"`
 	Email       string            `json:"email" validate:"required,email"`
 	Password    string            `json:"password" validate:"required"`
-	Location    *geojson.Geometry `json:"location" validate:"required"`
+	Location    *geojson.Geometry `json:"location" validate:""`
 	PhoneNumber string            `json:"phone_number" validate:"required"`
 }
 
@@ -127,11 +127,18 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	geom := userInput.Location.Geometry()
+	var (
+		locationEWKB []byte
+		geom         orb.Geometry
+	)
 
-	locationEWKB, err := orbToEWKB(geom, 4326)
-	if err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "Location Validation Error")
+	if geom != nil {
+		geom = userInput.Location.Geometry()
+		locationEWKB, err = orbToEWKB(geom, 4326)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "Location Validation Error")
+		}
+
 	}
 
 	hashedPassword, err := HashPassword(userInput.Password)
