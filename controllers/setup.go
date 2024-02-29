@@ -17,6 +17,18 @@ func New() http.Handler {
 	router.HandleFunc("/users/registration", RegisterUser).Methods("POST")
 	router.HandleFunc("/users/authentication", AuthenticateUser).Methods("POST")
 
+	router.HandleFunc("/categories", GetAllCategories).Methods("GET")
+	router.HandleFunc("/categories/{id}", GetCategory).Methods("GET")
+	router.HandleFunc("/categories", CreateCategory).Methods("POST")
+	router.HandleFunc("/categories/{id}", UpdateCategory).Methods("PUT")
+	router.HandleFunc("/categories/{id}", DeleteCategory).Methods("DELETE")
+
+	router.HandleFunc("/subcategories", GetAllSubcategories).Methods("GET")
+	router.HandleFunc("/subcategories/{id}", GetSubcategory).Methods("GET")
+	router.HandleFunc("/subcategories", CreateSubcategory).Methods("POST")
+	router.HandleFunc("/subcategories/{id}", UpdateSubcategory).Methods("PUT")
+	router.HandleFunc("/subcategories/{id}", DeleteSubcategory).Methods("DELETE")
+
 	loggedRouter := Logger(router)
 
 	return loggedRouter
