@@ -53,21 +53,26 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Printf("Request error: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		utils.RespondWithError(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 
 	users := make([]models.User, len(result))
 	for i, r := range result {
-		r.User.LocationText = common.GeoJSONText{Data: json.RawMessage(r.LocationText)}
+		if r.User.LocationEWKB == nil {
+			r.User.LocationText = common.GeoJSONText{Data: json.RawMessage("{}")}
+		} else {
+			r.User.LocationText = common.GeoJSONText{Data: json.RawMessage(r.LocationText)}
+		}
 		users[i] = r.User
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(users); err != nil {
-		log.Printf("Serialization error: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Printf("Request error: %v", err)
+		utils.RespondWithError(w, http.StatusInternalServerError, "Internal Server Error")
+		return
 	}
 }
 
@@ -88,13 +93,16 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			utils.RespondWithError(w, http.StatusNotFound, "User not found")
 		} else {
-			log.Printf("Request error: %v", err)
 			utils.RespondWithError(w, http.StatusInternalServerError, "Internal Server Error")
 		}
 		return
 	}
 
-	result.User.LocationText = common.GeoJSONText{Data: json.RawMessage(result.LocationText)}
+	if result.User.LocationEWKB == nil {
+		result.User.LocationText = common.GeoJSONText{Data: json.RawMessage("{}")}
+	} else {
+		result.User.LocationText = common.GeoJSONText{Data: json.RawMessage(result.LocationText)}
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

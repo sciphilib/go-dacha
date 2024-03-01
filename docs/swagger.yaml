@@ -1,0 +1,86 @@
+definitions:
+  models.AdResponse:
+    properties:
+      datetime:
+        type: string
+      id:
+        type: integer
+      location:
+        allOf:
+        - $ref: '#/definitions/models.LocationAd'
+        description: Предполагается, что Location - это структура с полями type и
+          coordinates
+      pictures:
+        items:
+          type: string
+        type: array
+      price:
+        type: string
+      subcategory:
+        allOf:
+        - $ref: '#/definitions/models.SubcategoryAd'
+        description: Предполагается, что Subcategory - это структура с полями id,
+          name и category
+      title:
+        type: string
+      user:
+        allOf:
+        - $ref: '#/definitions/models.UserAd'
+        description: Предполагается, что User - это структура с полями id, name, email,
+          phone_number, и location
+    type: object
+  models.LocationAd:
+    properties:
+      coordinates:
+        description: |-
+          Coordinates is an array of two float numbers.
+          Example: [123.45, 67.89]
+        items:
+          type: number
+        type: array
+      type:
+        type: string
+    type: object
+  models.SubcategoryAd:
+    properties:
+      category:
+        type: string
+      name:
+        type: string
+    type: object
+  models.UserAd:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      location:
+        $ref: '#/definitions/models.LocationAd'
+      name:
+        type: string
+      phone_number:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /ads:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all advertisements with detailed information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: An array of advertisement objects
+          schema:
+            items:
+              $ref: '#/definitions/models.AdResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+      summary: Get all ads
+      tags:
+      - ads
+swagger: "2.0"
