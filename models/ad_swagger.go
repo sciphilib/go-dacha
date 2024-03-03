@@ -9,6 +9,7 @@ type AdResponse struct {
 	ID          uint          `json:"id"`
 	Title       string        `json:"title"`
 	Price       string        `json:"price"`
+	Description string        `json:"description"`
 	Subcategory SubcategoryAd `json:"subcategory"` // Предполагается, что Subcategory - это структура с полями id, name и category
 	User        UserAd        `json:"user"`        // Предполагается, что User - это структура с полями id, name, email, phone_number, и location
 	Datetime    time.Time     `json:"datetime"`

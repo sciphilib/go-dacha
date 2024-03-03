@@ -52,6 +52,9 @@ const docTemplate = `{
                 "datetime": {
                     "type": "string"
                 },
+                "description": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -97,13 +100,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "coordinates": {
-                    "description": "Coordinates is an array of two float numbers.\nExample: [123.45, 67.89]",
+                    "description": "Example: [123.45, 67.89]",
                     "type": "array",
                     "items": {
                         "type": "number"
                     }
                 },
                 "type": {
+                    "description": "Coordinates is an array of two float numbers.",
                     "type": "string"
                 }
             }
