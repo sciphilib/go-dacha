@@ -105,9 +105,10 @@ func GetAllAds(w http.ResponseWriter, r *http.Request) {
 		}
 
 		formattedAd := map[string]interface{}{
-			"id":    ad.ID,
-			"title": ad.Title,
-			"price": ad.Price,
+			"id":          ad.ID,
+			"title":       ad.Title,
+			"price":       ad.Price,
+			"description": ad.Description,
 			"subcategory": map[string]interface{}{
 				"name":     ad.Subcategory.Name,
 				"category": ad.Subcategory.Category,
