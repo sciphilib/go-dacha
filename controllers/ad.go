@@ -130,37 +130,110 @@ func GetAllAds(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetAd godoc
+// @Summary Get an ad by id
+// @Description Retrieve an advertisements by id with detailed information
+// @Tags ads
+// @Accept json
+// @Produce json
+// @Param id path int true "Ad ID"
+// @Success 200 {object} models.AdResponse "An advertisement object"
+// @Failure 404 {object} nil "Ad not found"
+// @Failure 500 {object} nil "Internal Server Error"
+// @Router /ads/{id} [get]
 func GetAd(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
 	var result struct {
 		models.Ad
-		LocationText string         `json:"location_text"`
-		Pictures     pq.StringArray `gorm:"column:pictures" json:"pictures"`
+		SubcategoryID   uint           `json:"subcategory_id"`
+		SubcategoryName string         `json:"subcategory_name"`
+		CategoryName    string         `json:"category_name"`
+		LocationText    string         `json:"location"`
+		Pictures        pq.StringArray `gorm:"column:pictures" json:"pictures"`
 	}
 
 	err := models.DB.Raw(`
-        SELECT advertisements.*, ST_AsGeoJSON(advertisements.location::geometry) AS location_text FROM advertisements WHERE id = ?`, id).Scan(&result).Error
+           SELECT
+                 advertisements.*, 
+                 subcategories.id AS subcategory_id, 
+                 subcategories.name AS subcategory_name, 
+                 categories.name AS category_name,
+                 ST_AsGeoJSON(advertisements.location::geometry) AS location_text
+           FROM advertisements
+           JOIN subcategories ON subcategories.id = advertisements.subcategory_id
+           JOIN categories ON categories.id = subcategories.category_id
+           WHERE advertisements.id = ?
+        `, id).
+		Scan(&result).Error
+
+	if result.Ad.ID == 0 {
+		utils.RespondWithError(w, http.StatusNotFound, "Ad is not found")
+		return
+	}
+
+	result.Ad.LocationText = common.GeoJSONText{Data: json.RawMessage(result.LocationText)}
+	result.Ad.Subcategory.ID = result.SubcategoryID
+	result.Ad.Subcategory.Name = result.SubcategoryName
+	result.Ad.Subcategory.Category = result.CategoryName
+	ad := result.Ad
+	ad.PicturesText = make([]string, len(result.Pictures))
+	copy(ad.PicturesText, result.Pictures)
+
+	var user_json struct {
+		models.User
+		LocationText string `json:"location"`
+	}
+
+	err = models.DB.Raw(`
+        SELECT users.*, ST_AsGeoJSON(users.location::geometry) AS location_text
+        FROM users WHERE users.id = ?`, ad.User_id).
+		Scan(&user_json).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.RespondWithError(w, http.StatusNotFound, "Ad not found")
+			utils.RespondWithError(w, http.StatusNotFound, "Ad is not found")
 		} else {
 			utils.RespondWithError(w, http.StatusInternalServerError, "Internal Server Error")
 		}
 		return
 	}
 
-	ad := result.Ad
-	ad.LocationText = common.GeoJSONText{Data: json.RawMessage(result.LocationText)}
-	ad.PicturesText = []string(result.Pictures)
+	if err != nil {
+		log.Printf("Request error: %v", err)
+		utils.RespondWithError(w, http.StatusInternalServerError, "Internal Server Error")
+		return
+	}
+
+	if user_json.User.LocationEWKB == nil {
+		user_json.User.LocationText = common.GeoJSONText{Data: json.RawMessage("{}")}
+	} else {
+		user_json.User.LocationText = common.GeoJSONText{Data: json.RawMessage(user_json.LocationText)}
+	}
+	user := user_json.User
+
+	formattedAd := map[string]interface{}{
+		"id":          ad.ID,
+		"title":       ad.Title,
+		"price":       ad.Price,
+		"description": ad.Description,
+		"subcategory": map[string]interface{}{
+			"name":     ad.Subcategory.Name,
+			"category": ad.Subcategory.Category,
+		},
+		"user":     user,
+		"datetime": ad.Datetime,
+		"pictures": ad.PicturesText,
+		"location": ad.LocationText,
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(ad); err != nil {
+	if err := json.NewEncoder(w).Encode(formattedAd); err != nil {
 		log.Printf("Serialization error: %v", err)
-		utils.RespondWithError(w, http.StatusInternalServerError, "Error encoding response")
+		utils.RespondWithError(w, http.StatusInternalServerError, "Internal Server Error")
+		return
 	}
 }
 

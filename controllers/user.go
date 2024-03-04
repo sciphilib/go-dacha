@@ -91,7 +91,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.RespondWithError(w, http.StatusNotFound, "User not found")
+			utils.RespondWithError(w, http.StatusNotFound, "User is not found")
 		} else {
 			utils.RespondWithError(w, http.StatusInternalServerError, "Internal Server Error")
 		}

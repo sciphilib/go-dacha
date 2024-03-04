@@ -43,6 +43,44 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/ads/{id}": {
+            "get": {
+                "description": "Retrieve an advertisements by id with detailed information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ads"
+                ],
+                "summary": "Get ad by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Ad ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An advertisement object",
+                        "schema": {
+                            "$ref": "#/definitions/models.AdResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Ad not found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
         }
     },
     "definitions": {

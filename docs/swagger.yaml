@@ -84,4 +84,29 @@ paths:
       summary: Get all ads
       tags:
       - ads
+  /ads/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve an advertisements by id with detailed information
+      parameters:
+      - description: Ad ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: An advertisement object
+          schema:
+            $ref: '#/definitions/models.AdResponse'
+        "404":
+          description: Ad not found
+        "500":
+          description: Internal Server Error
+      summary: Get ad by id
+      tags:
+      - ads
 swagger: "2.0"
