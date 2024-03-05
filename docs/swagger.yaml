@@ -158,6 +158,30 @@ paths:
       tags:
       - advertisements
   /ads/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes an advertisement by its ID
+      parameters:
+      - description: Ad ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Ad deleted successfully
+          schema:
+            type: string
+        "404":
+          description: Ad not found
+          schema:
+            type: string
+      summary: Delete an advertisement
+      tags:
+      - advertisements
     get:
       consumes:
       - application/json

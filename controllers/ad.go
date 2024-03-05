@@ -268,7 +268,13 @@ type UserAdInput struct {
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /ads [post]
 func CreateAd(w http.ResponseWriter, r *http.Request) {
-	var userInput UserAdInput
+	var (
+		locationEWKB []byte
+		geom         orb.Geometry
+		userInput    UserAdInput
+		subcategory  models.Subcategory
+		user         models.User
+	)
 
 	body, _ := io.ReadAll(r.Body)
 	_ = json.Unmarshal(body, &userInput)
@@ -281,11 +287,6 @@ func CreateAd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var (
-		locationEWKB []byte
-		geom         orb.Geometry
-	)
-
 	if userInput.Location != nil {
 		geom = userInput.Location.Geometry()
 		locationEWKB, err = orbToEWKB(geom, 4326)
@@ -294,7 +295,6 @@ func CreateAd(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	var subcategory models.Subcategory
 	err = models.DB.
 		Preload("Category").
 		Where("name = ?", userInput.Subcategory).
@@ -304,7 +304,6 @@ func CreateAd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user models.User
 	err = models.DB.
 		Where("email = ?", userInput.UserEmail).
 		First(&user).Error
@@ -349,15 +348,19 @@ func CreateAd(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} string "Ad/Subcategory/User not found"
 // @Router /ads/{id} [put]
 func UpdateAd(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"]
-	var ad models.Advertisement
+	var (
+		locationEWKB []byte
+		geom         orb.Geometry
+		ad           models.Advertisement
+		userInput    UserAdInput
+		user         models.User
+	)
 
+	id := mux.Vars(r)["id"]
 	if err := models.DB.Where("id = ?", id).First(&ad).Error; err != nil {
 		utils.RespondWithError(w, http.StatusNotFound, "Ad not found")
 		return
 	}
-
-	var userInput UserAdInput
 
 	body, _ := io.ReadAll(r.Body)
 	_ = json.Unmarshal(body, &userInput)
@@ -369,11 +372,6 @@ func UpdateAd(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithError(w, http.StatusBadRequest, "Validation Error")
 		return
 	}
-
-	var (
-		locationEWKB []byte
-		geom         orb.Geometry
-	)
 
 	if userInput.Location != nil {
 		geom = userInput.Location.Geometry()
@@ -393,7 +391,6 @@ func UpdateAd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user models.User
 	err = models.DB.
 		Where("email = ?", userInput.UserEmail).
 		First(&user).Error
@@ -422,6 +419,27 @@ func UpdateAd(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(ad)
 }
 
+// DeleteAd godoc
+// @Summary Delete an advertisement
+// @Description Deletes an advertisement by its ID
+// @Tags advertisements
+// @Accept json
+// @Produce json
+// @Param id path int true "Ad ID"
+// @Success 200 {string} string "Ad deleted successfully"
+// @Failure 404 {object} string "Ad not found"
+// @Router /ads/{id} [delete]
 func DeleteAd(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+	var ad models.Advertisement
 
+	if err := models.DB.Where("id = ?", id).First(&ad).Error; err != nil {
+		utils.RespondWithError(w, http.StatusNotFound, "Ad not found")
+		return
+	}
+
+	models.DB.Delete(&ad)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 }
