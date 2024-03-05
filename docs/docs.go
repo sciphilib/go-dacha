@@ -25,7 +25,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ads"
+                    "advertisements"
                 ],
                 "summary": "Get all ads",
                 "responses": {
@@ -42,6 +42,62 @@ const docTemplate = `{
                         "description": "Internal Server Error"
                     }
                 }
+            },
+            "post": {
+                "description": "Adds a new advertisement with the given details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "advertisements"
+                ],
+                "summary": "Add a new advertisement",
+                "parameters": [
+                    {
+                        "description": "Create Ad",
+                        "name": "ad",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AdInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ID of the newly created ad",
+                        "schema": {
+                            "$ref": "#/definitions/models.AdAdded"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Failed to create a new ad",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Subcategory/User is not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         },
         "/ads/{id}": {
@@ -54,9 +110,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ads"
+                    "advertisements"
                 ],
-                "summary": "Get ad by id",
+                "summary": "Get an ad by id",
                 "parameters": [
                     {
                         "type": "integer",
@@ -84,6 +140,58 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.AdAdded": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.AdInput": {
+            "type": "object",
+            "required": [
+                "category",
+                "datetime",
+                "location",
+                "price",
+                "subcategory",
+                "title",
+                "user_email"
+            ],
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "datetime": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "location": {
+                    "$ref": "#/definitions/models.LocationAd"
+                },
+                "pictures": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "price": {
+                    "type": "string"
+                },
+                "subcategory": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "user_email": {
+                    "type": "string"
+                }
+            }
+        },
         "models.AdResponse": {
             "type": "object",
             "properties": {

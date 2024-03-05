@@ -4,6 +4,23 @@ import (
 	"time"
 )
 
+type AdAdded struct {
+	ID uint `json:"id"`
+}
+
+// swagger:model AdInput
+type AdInput struct {
+	Title       string     `json:"title" validate:"required"`
+	Price       string     `json:"price" validate:"required"`
+	Subcategory string     `json:"subcategory" validate:"required"`
+	Category    string     `json:"category" validate:"required"`
+	Description string     `json:"description"`
+	UserEmail   string     `json:"user_email" validate:"required"`
+	Datetime    time.Time  `json:"datetime" validate:"required"`
+	Pictures    []string   `json:"pictures"`
+	Location    LocationAd `json:"location" validate:"required"`
+}
+
 // swagger:model AdResponse
 type AdResponse struct {
 	ID          uint          `json:"id"`

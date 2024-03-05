@@ -1,4 +1,40 @@
 definitions:
+  models.AdAdded:
+    properties:
+      id:
+        type: integer
+    type: object
+  models.AdInput:
+    properties:
+      category:
+        type: string
+      datetime:
+        type: string
+      description:
+        type: string
+      location:
+        $ref: '#/definitions/models.LocationAd'
+      pictures:
+        items:
+          type: string
+        type: array
+      price:
+        type: string
+      subcategory:
+        type: string
+      title:
+        type: string
+      user_email:
+        type: string
+    required:
+    - category
+    - datetime
+    - location
+    - price
+    - subcategory
+    - title
+    - user_email
+    type: object
   models.AdResponse:
     properties:
       datetime:
@@ -83,7 +119,44 @@ paths:
           description: Internal Server Error
       summary: Get all ads
       tags:
-      - ads
+      - advertisements
+    post:
+      consumes:
+      - application/json
+      description: Adds a new advertisement with the given details
+      parameters:
+      - description: Create Ad
+        in: body
+        name: ad
+        required: true
+        schema:
+          $ref: '#/definitions/models.AdInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ID of the newly created ad
+          schema:
+            $ref: '#/definitions/models.AdAdded'
+        "400":
+          description: Validation Error
+          schema:
+            type: string
+        "403":
+          description: Failed to create a new ad
+          schema:
+            type: string
+        "404":
+          description: Subcategory/User is not found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Add a new advertisement
+      tags:
+      - advertisements
   /ads/{id}:
     get:
       consumes:
@@ -106,7 +179,7 @@ paths:
           description: Ad not found
         "500":
           description: Internal Server Error
-      summary: Get ad by id
+      summary: Get an ad by id
       tags:
-      - ads
+      - advertisements
 swagger: "2.0"

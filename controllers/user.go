@@ -140,13 +140,12 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		geom         orb.Geometry
 	)
 
-	if geom != nil {
+	if userInput.Location != nil {
 		geom = userInput.Location.Geometry()
 		locationEWKB, err = orbToEWKB(geom, 4326)
 		if err != nil {
 			utils.RespondWithError(w, http.StatusBadRequest, "Location Validation Error")
 		}
-
 	}
 
 	hashedPassword, err := HashPassword(userInput.Password)
