@@ -182,4 +182,42 @@ paths:
       summary: Get an ad by id
       tags:
       - advertisements
+    put:
+      consumes:
+      - application/json
+      description: Update an existing advertisement by its ID with new information
+      parameters:
+      - description: Ad ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Advertisement data
+        in: body
+        name: ad
+        required: true
+        schema:
+          $ref: '#/definitions/models.AdInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated advertisement
+          schema:
+            $ref: '#/definitions/models.AdResponse'
+        "400":
+          description: Validation Error
+          schema:
+            type: string
+        "403":
+          description: Failed to update the ad
+          schema:
+            type: string
+        "404":
+          description: Ad/Subcategory/User not found
+          schema:
+            type: string
+      summary: Update an advertisement
+      tags:
+      - advertisements
 swagger: "2.0"

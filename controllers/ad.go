@@ -242,6 +242,18 @@ func GetAd(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type UserAdInput struct {
+	Title       string            `json:"title" validate:"required"`
+	Price       string            `json:"price" validate:"required"`
+	Subcategory string            `json:"subcategory" validate:"required"`
+	Category    string            `json:"category" validate:"required"`
+	Description string            `json:"description"`
+	UserEmail   string            `json:"user_email" validate:"required"`
+	Datetime    time.Time         `json:"datetime" validate:"required"`
+	Pictures    []string          `json:"pictures"`
+	Location    *geojson.Geometry `json:"location" validate:"required"`
+}
+
 // CreateAd godoc
 // @Summary Add a new advertisement
 // @Description Adds a new advertisement with the given details
@@ -256,17 +268,7 @@ func GetAd(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /ads [post]
 func CreateAd(w http.ResponseWriter, r *http.Request) {
-	var userInput struct {
-		Title       string            `json:"title" validate:"required"`
-		Price       string            `json:"price" validate:"required"`
-		Subcategory string            `json:"subcategory" validate:"required"`
-		Category    string            `json:"category" validate:"required"`
-		Description string            `json:"description"`
-		UserEmail   string            `json:"user_email" validate:"required"`
-		Datetime    time.Time         `json:"datetime" validate:"required"`
-		Pictures    []string          `json:"pictures"`
-		Location    *geojson.Geometry `json:"location" validate:"required"`
-	}
+	var userInput UserAdInput
 
 	body, _ := io.ReadAll(r.Body)
 	_ = json.Unmarshal(body, &userInput)
@@ -333,8 +335,91 @@ func CreateAd(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"id": ad.ID})
 }
 
+// UpdateAd godoc
+// @Summary Update an advertisement
+// @Description Update an existing advertisement by its ID with new information
+// @Tags advertisements
+// @Accept json
+// @Produce json
+// @Param id path int true "Ad ID"
+// @Param ad body models.AdInput true "Advertisement data"
+// @Success 200 {object} models.AdResponse "Successfully updated advertisement"
+// @Failure 400 {object} string "Validation Error"
+// @Failure 403 {object} string "Failed to update the ad"
+// @Failure 404 {object} string "Ad/Subcategory/User not found"
+// @Router /ads/{id} [put]
 func UpdateAd(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+	var ad models.Advertisement
 
+	if err := models.DB.Where("id = ?", id).First(&ad).Error; err != nil {
+		utils.RespondWithError(w, http.StatusNotFound, "Ad not found")
+		return
+	}
+
+	var userInput UserAdInput
+
+	body, _ := io.ReadAll(r.Body)
+	_ = json.Unmarshal(body, &userInput)
+
+	validate := validator.New()
+	err := validate.Struct(userInput)
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Validation Error")
+		return
+	}
+
+	var (
+		locationEWKB []byte
+		geom         orb.Geometry
+	)
+
+	if userInput.Location != nil {
+		geom = userInput.Location.Geometry()
+		locationEWKB, err = orbToEWKB(geom, 4326)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "Location Validation Error")
+		}
+	}
+
+	var subcategory models.Subcategory
+	err = models.DB.
+		Preload("Category").
+		Where("name = ?", userInput.Subcategory).
+		First(&subcategory).Error
+	if subcategory.ID == 0 {
+		utils.RespondWithError(w, http.StatusNotFound, "Subcategory is not found")
+		return
+	}
+
+	var user models.User
+	err = models.DB.
+		Where("email = ?", userInput.UserEmail).
+		First(&user).Error
+
+	if user.ID == 0 {
+		utils.RespondWithError(w, http.StatusNotFound, "User is not found")
+		return
+	}
+
+	ad.Title = userInput.Title
+	ad.Price = userInput.Price
+	ad.Subcategory_id = subcategory.ID
+	ad.Description = userInput.Description
+	ad.User_id = user.ID
+	ad.Datetime = userInput.Datetime
+	ad.Pictures = userInput.Pictures
+	ad.LocationEWKB = locationEWKB
+
+	if err := models.DB.Save(&ad).Error; err != nil {
+		utils.RespondWithError(w, http.StatusForbidden, "Failed to update the ad")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(ad)
 }
 
 func DeleteAd(w http.ResponseWriter, r *http.Request) {

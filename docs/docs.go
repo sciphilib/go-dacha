@@ -136,6 +136,63 @@ const docTemplate = `{
                         "description": "Internal Server Error"
                     }
                 }
+            },
+            "put": {
+                "description": "Update an existing advertisement by its ID with new information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "advertisements"
+                ],
+                "summary": "Update an advertisement",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Ad ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Advertisement data",
+                        "name": "ad",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AdInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated advertisement",
+                        "schema": {
+                            "$ref": "#/definitions/models.AdResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Failed to update the ad",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Ad/Subcategory/User not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         }
     },
