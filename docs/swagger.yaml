@@ -98,6 +98,39 @@ definitions:
       phone_number:
         type: string
     type: object
+  models.UserLocation:
+    properties:
+      coordinates:
+        description: 'Example: [123.45, 67.89]'
+        items:
+          type: number
+        type: array
+      type:
+        description: Coordinates is an array of two float numbers.
+        type: string
+    type: object
+  models.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      location:
+        $ref: '#/definitions/models.UserLocation'
+      name:
+        type: string
+      phone_number:
+        type: string
+    type: object
+  models.UserUpdateSwagger:
+    properties:
+      location:
+        $ref: '#/definitions/models.UserLocation'
+      name:
+        type: string
+      phone_number:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -289,4 +322,39 @@ paths:
       summary: Get all ads ordered by date
       tags:
       - advertisements
+  /users/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Updates details of an existing user by ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User data to update
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserUpdateSwagger'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated user details
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Validation Error
+          schema:
+            type: string
+        "404":
+          description: User not found
+          schema:
+            type: string
+      summary: Update user details
+      tags:
+      - users
 swagger: "2.0"

@@ -41,6 +41,12 @@ type UserInput struct {
 	PhoneNumber string            `json:"phone_number" validate:"required"`
 }
 
+type UserUpdate struct {
+	Name        string            `json:"name" validate:"required"`
+	Location    *geojson.Geometry `json:"location" validate:""`
+	PhoneNumber string            `json:"phone_number" validate:"required"`
+}
+
 func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	var result []struct {
 		models.User
@@ -260,34 +266,58 @@ func GenerateToken() (string, error) {
 	return token.SignedString([]byte(signingKey))
 }
 
+// UpdateUser godoc
+// @Summary Update user details
+// @Description Updates details of an existing user by ID.
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Param user body models.UserUpdateSwagger true "User data to update"
+// @Success 200 {object} models.UserResponse "Successfully updated user details"
+// @Failure 400 {object} string "Validation Error"
+// @Failure 404 {object} string "User not found"
+// @Router /users/{id} [put]
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	// id := mux.Vars(r)["id"]
-	// var user models.User
+	var (
+		locationEWKB []byte
+		geom         orb.Geometry
+		input        UserUpdate
+		user         models.User
+	)
 
-	// if err := models.DB.Where("id = ?", id).First(&user).Error; err != nil {
-	// 	utils.RespondWithError(w, http.StatusNotFound, "User not found")
-	// 	return
-	// }
+	id := mux.Vars(r)["id"]
 
-	// var input UserInput
+	if err := models.DB.Where("id = ?", id).First(&user).Error; err != nil {
+		utils.RespondWithError(w, http.StatusNotFound, "User not found")
+		return
+	}
 
-	// body, _ := io.ReadAll(r.Body)
-	// _ = json.Unmarshal(body, &input)
+	body, _ := io.ReadAll(r.Body)
+	_ = json.Unmarshal(body, &input)
 
-	// validate := validator.New()
-	// err := validate.Struct(input)
+	validate := validator.New()
+	err := validate.Struct(input)
 
-	// if err != nil {
-	// 	utils.RespondWithError(w, http.StatusBadRequest, "Validation Error")
-	// 	return
-	// }
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Validation Error")
+		return
+	}
 
-	// user.Name = input.Name
-	// user.Email = input.Email
-	// user.Password = input.Password
+	if input.Location != nil {
+		geom = input.Location.Geometry()
+		locationEWKB, err = orbToEWKB(geom, 4326)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "Location Validation Error")
+		}
+	}
 
-	// models.DB.Save(&user)
+	user.Name = input.Name
+	user.LocationEWKB = locationEWKB
+	user.PhoneNumber = input.PhoneNumber
 
-	// w.Header().Set("Content-Type", "application/json")
-	// json.NewEncoder(w).Encode(user)
+	models.DB.Save(&user)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(user)
 }

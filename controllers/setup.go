@@ -17,6 +17,7 @@ func New() http.Handler {
 
 	router.HandleFunc("/users", GetAllUsers).Methods("GET")
 	router.HandleFunc("/users/{id}", GetUser).Methods("GET")
+	router.HandleFunc("/users/{id}", UpdateUser).Methods("PUT")
 	router.HandleFunc("/users/registration", RegisterUser).Methods("POST")
 	router.HandleFunc("/users/authentication", AuthenticateUser).Methods("POST")
 
