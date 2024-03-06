@@ -244,4 +244,48 @@ paths:
       summary: Update an advertisement
       tags:
       - advertisements
+  /ads/{id}/nearest:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all advertisements from near to far
+      parameters:
+      - description: Ad ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: An array of advertisement objects
+          schema:
+            items:
+              $ref: '#/definitions/models.AdResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+      summary: Get all ads ordered by distance
+      tags:
+      - advertisements
+  /ads/newest:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all advertisements from newest to oldest
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: An array of advertisement objects
+          schema:
+            items:
+              $ref: '#/definitions/models.AdResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+      summary: Get all ads ordered by date
+      tags:
+      - advertisements
 swagger: "2.0"

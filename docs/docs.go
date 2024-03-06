@@ -100,6 +100,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/ads/newest": {
+            "get": {
+                "description": "Retrieves a list of all advertisements from newest to oldest",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "advertisements"
+                ],
+                "summary": "Get all ads ordered by date",
+                "responses": {
+                    "200": {
+                        "description": "An array of advertisement objects",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.AdResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/ads/{id}": {
             "get": {
                 "description": "Retrieve an advertisements by id with detailed information",
@@ -227,6 +256,44 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
+                    }
+                }
+            }
+        },
+        "/ads/{id}/nearest": {
+            "get": {
+                "description": "Retrieves a list of all advertisements from near to far",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "advertisements"
+                ],
+                "summary": "Get all ads ordered by distance",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Ad ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "An array of advertisement objects",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.AdResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 }
             }

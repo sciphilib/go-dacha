@@ -33,6 +33,8 @@ func New() http.Handler {
 	router.HandleFunc("/subcategories/{id}", DeleteSubcategory).Methods("DELETE")
 
 	router.HandleFunc("/ads", GetAllAds).Methods("GET")
+	router.HandleFunc("/ads/newest", GetNewestAds).Methods("GET")
+	router.HandleFunc("/ads/{id}/nearest", GetNearestAds).Methods("GET")
 	router.HandleFunc("/ads/{id}", GetAd).Methods("GET")
 	router.HandleFunc("/ads", CreateAd).Methods("POST")
 	router.HandleFunc("/ads/{id}", UpdateAd).Methods("PUT")
