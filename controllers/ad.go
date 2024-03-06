@@ -248,15 +248,15 @@ func GetNewestAds(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetClosestAds godoc
-// @Summary Get all ads ordered by distance
-// @Description Retrieves a list of all advertisements from near to far
+// @Summary Get all ads ordered by distance from user's location
+// @Description Retrieves a list of all advertisements from near to far from user's location
 // @Tags advertisements
 // @Accept json
 // @Produce json
-// @Param id path int true "Ad ID"
+// @Param id path int true "User ID"
 // @Success 200 {array} models.AdResponse "An array of advertisement objects"
 // @Failure 500 {object} nil "Internal Server Error"
-// @Router /ads/{id}/nearest [get]
+// @Router /ads/{user_id}/nearest [get]
 func GetNearestAds(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -272,7 +272,7 @@ func GetNearestAds(w http.ResponseWriter, r *http.Request) {
            ST_AsGeoJSON(a.location::geometry) AS location_text,
            ST_Distance(
               a.location,
-              (SELECT ST_SetSRID(ST_GeomFromEWKB(location), 4326) FROM advertisements WHERE id = ?)
+              (SELECT ST_SetSRID(ST_GeomFromEWKB(location), 4326) FROM users WHERE id = ?)
            ) as distance
       FROM advertisements a
       JOIN subcategories ON subcategories.id = a.subcategory_id

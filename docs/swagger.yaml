@@ -244,13 +244,14 @@ paths:
       summary: Update an advertisement
       tags:
       - advertisements
-  /ads/{id}/nearest:
+  /ads/{user_id}/nearest:
     get:
       consumes:
       - application/json
-      description: Retrieves a list of all advertisements from near to far
+      description: Retrieves a list of all advertisements from near to far from user's
+        location
       parameters:
-      - description: Ad ID
+      - description: User ID
         in: path
         name: id
         required: true
@@ -266,7 +267,7 @@ paths:
             type: array
         "500":
           description: Internal Server Error
-      summary: Get all ads ordered by distance
+      summary: Get all ads ordered by distance from user's location
       tags:
       - advertisements
   /ads/newest:

@@ -260,9 +260,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/ads/{id}/nearest": {
+        "/ads/{user_id}/nearest": {
             "get": {
-                "description": "Retrieves a list of all advertisements from near to far",
+                "description": "Retrieves a list of all advertisements from near to far from user's location",
                 "consumes": [
                     "application/json"
                 ],
@@ -272,11 +272,11 @@ const docTemplate = `{
                 "tags": [
                     "advertisements"
                 ],
-                "summary": "Get all ads ordered by distance",
+                "summary": "Get all ads ordered by distance from user's location",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Ad ID",
+                        "description": "User ID",
                         "name": "id",
                         "in": "path",
                         "required": true
