@@ -1,4 +1,18 @@
 definitions:
+  controllers.CategoryInput:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  controllers.SubcategoryInput:
+    properties:
+      category:
+        type: string
+      name:
+        type: string
+    type: object
   models.AdAdded:
     properties:
       id:
@@ -67,6 +81,20 @@ definitions:
         description: Предполагается, что User - это структура с полями id, name, email,
           phone_number, и location
     type: object
+  models.AuthInputS:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  models.Category:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
   models.LocationAd:
     properties:
       coordinates:
@@ -78,10 +106,28 @@ definitions:
         description: Coordinates is an array of two float numbers.
         type: string
     type: object
+  models.Subcategory:
+    properties:
+      category_id:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
   models.SubcategoryAd:
     properties:
       category:
         type: string
+      name:
+        type: string
+    type: object
+  models.SubcategoryResponse:
+    properties:
+      category:
+        type: string
+      id:
+        type: integer
       name:
         type: string
     type: object
@@ -94,6 +140,19 @@ definitions:
       location:
         $ref: '#/definitions/models.LocationAd'
       name:
+        type: string
+      phone_number:
+        type: string
+    type: object
+  models.UserInputS:
+    properties:
+      email:
+        type: string
+      location:
+        $ref: '#/definitions/models.UserLocation'
+      name:
+        type: string
+      password:
         type: string
       phone_number:
         type: string
@@ -322,7 +381,308 @@ paths:
       summary: Get all ads ordered by date
       tags:
       - advertisements
+  /categories:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all categories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of categories
+          schema:
+            items:
+              $ref: '#/definitions/models.Category'
+            type: array
+      summary: Get all categories
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: Creates a new category with the provided name
+      parameters:
+      - description: Category data
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.CategoryInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Category created
+          schema:
+            $ref: '#/definitions/models.Category'
+        "400":
+          description: Validation Error
+          schema:
+            type: string
+      summary: Create a new category
+      tags:
+      - categories
+  /categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes an existing category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Category successfully deleted
+        "404":
+          description: Category not found
+          schema:
+            type: string
+      summary: Delete a category
+      tags:
+      - categories
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a category by its ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Category found
+          schema:
+            $ref: '#/definitions/models.Category'
+        "404":
+          description: Category not found
+          schema:
+            type: string
+      summary: Get a category by ID
+      tags:
+      - categories
+    put:
+      consumes:
+      - application/json
+      description: Updates the name of an existing category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated category data
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.CategoryInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Category updated
+          schema:
+            $ref: '#/definitions/models.Category'
+        "400":
+          description: Validation Error
+          schema:
+            type: string
+        "404":
+          description: Category not found
+          schema:
+            type: string
+      summary: Update a category
+      tags:
+      - categories
+  /subcategories:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all subcategories with their categories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of subcategories
+          schema:
+            items:
+              $ref: '#/definitions/models.SubcategoryResponse'
+            type: array
+      summary: Get all subcategories
+      tags:
+      - subcategories
+    post:
+      consumes:
+      - application/json
+      description: Creates a new subcategory within a category
+      parameters:
+      - description: Subcategory creation data
+        in: body
+        name: subcategory
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.SubcategoryInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Subcategory created
+          schema:
+            $ref: '#/definitions/models.Subcategory'
+        "400":
+          description: Invalid JSON payload or validation error
+          schema:
+            type: string
+        "403":
+          description: Unknown category
+          schema:
+            type: string
+      summary: Create a new subcategory
+      tags:
+      - subcategories
+  /subcategories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes an existing subcategory by ID
+      parameters:
+      - description: Subcategory ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Subcategory successfully deleted
+        "404":
+          description: Subcategory not found
+          schema:
+            type: string
+      summary: Delete a subcategory
+      tags:
+      - subcategories
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a subcategory by its ID including category name
+      parameters:
+      - description: Subcategory ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Subcategory found
+          schema:
+            $ref: '#/definitions/models.SubcategoryResponse'
+        "404":
+          description: Subcategory not found
+          schema:
+            type: string
+      summary: Get a subcategory by ID
+      tags:
+      - subcategories
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing subcategory by ID
+      parameters:
+      - description: Subcategory ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Subcategory update data
+        in: body
+        name: subcategory
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.SubcategoryInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Subcategory updated
+          schema:
+            $ref: '#/definitions/models.Subcategory'
+        "400":
+          description: Invalid JSON payload or validation error
+          schema:
+            type: string
+        "403":
+          description: Unknown category
+          schema:
+            type: string
+        "404":
+          description: Subcategory not found
+          schema:
+            type: string
+      summary: Update a subcategory
+      tags:
+      - subcategories
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all users with their locations in GeoJSON format
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: A list of users
+          schema:
+            items:
+              $ref: '#/definitions/models.UserResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get all users
+      tags:
+      - users
   /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: User successfully deleted
+        "404":
+          description: User not found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Delete a user
+      tags:
+      - users
     put:
       consumes:
       - application/json
@@ -355,6 +715,72 @@ paths:
           schema:
             type: string
       summary: Update user details
+      tags:
+      - users
+  /users/authentication:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns a token
+      parameters:
+      - description: User credentials for authentication
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.AuthInputS'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: id, token" "ID and token of the authenticated user
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Incorrect password or validation error
+          schema:
+            type: string
+        "404":
+          description: User not found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Authenticate a user
+      tags:
+      - users
+  /users/registration:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user with the provided information
+      parameters:
+      - description: User data for registration
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserInputS'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: id, token" "ID and token of the newly registered user
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Validation Error
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Register a new user
       tags:
       - users
 swagger: "2.0"

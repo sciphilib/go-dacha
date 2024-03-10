@@ -47,6 +47,15 @@ type UserUpdate struct {
 	PhoneNumber string            `json:"phone_number" validate:"required"`
 }
 
+// GetAllUsers godoc
+// @Summary Get all users
+// @Description Retrieves a list of all users with their locations in GeoJSON format
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 200 {array} models.UserResponse "A list of users"
+// @Failure 500 {object} string "Internal Server Error"
+// @Router /users [get]
 func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	var result []struct {
 		models.User
@@ -127,6 +136,17 @@ func orbToEWKB(geom orb.Geometry, srid int) ([]byte, error) {
 	return data, nil
 }
 
+// RegisterUser godoc
+// @Summary Register a new user
+// @Description Creates a new user with the provided information
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body models.UserInputS true "User data for registration"
+// @Success 200 {object} map[string]interface{} "id, token" "ID and token of the newly registered user"
+// @Failure 400 {object} string "Validation Error"
+// @Failure 500 {object} string "Internal Server Error"
+// @Router /users/registration [post]
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	var userInput UserInput
 
@@ -179,6 +199,18 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"id": user.ID, "token": token})
 }
 
+// AuthenticateUser godoc
+// @Summary Authenticate a user
+// @Description Authenticates a user and returns a token
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param credentials body models.AuthInputS true "User credentials for authentication"
+// @Success 200 {object} map[string]interface{} "id, token" "ID and token of the authenticated user"
+// @Failure 400 {object} string "Incorrect password or validation error"
+// @Failure 404 {object} string "User not found"
+// @Failure 500 {object} string "Internal Server Error"
+// @Router /users/authentication [post]
 func AuthenticateUser(w http.ResponseWriter, r *http.Request) {
 	type AuthInput struct {
 		Email    string `json:email`
@@ -222,6 +254,17 @@ func AuthenticateUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"id": user.ID, "token": token})
 }
 
+// DeleteUser godoc
+// @Summary Delete a user
+// @Description Deletes a user by ID
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 204 "User successfully deleted"
+// @Failure 404 {object} string "User not found"
+// @Failure 500 {object} string "Internal Server Error"
+// @Router /users/{id} [delete]
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]

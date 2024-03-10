@@ -1,5 +1,20 @@
 package models
 
+// swagger: model UserInputS
+type UserInputS struct {
+	Name        string       `json:"name"`
+	Email       string       `json:"email"`
+	Password    string       `json:"password"`
+	Location    UserLocation `json:"location"`
+	PhoneNumber string       `json:"phone_number"`
+}
+
+// swagger: model AuthInput
+type AuthInputS struct {
+	Email    string `json:email`
+	Password string `json:password`
+}
+
 // swagger:model UserResponse
 type UserResponse struct {
 	ID          uint         `json:"id"`
